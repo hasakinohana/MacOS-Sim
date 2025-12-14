@@ -18,10 +18,13 @@ export const useWindowManager = () => {
     setNextZIndex(prev => prev + 1);
   }, [nextZIndex]);
 
-  const openApp = useCallback((appId: AppID) => {
+  const openApp = useCallback((appId: AppID, launchProps?: any) => {
     // Check if app is already open and just focus it (single instance mode for simplicity)
     const existingWindow = windows.find(w => w.appId === appId);
     if (existingWindow) {
+      if (launchProps) {
+        setWindows(prev => prev.map(w => w.id === existingWindow.id ? { ...w, launchProps } : w));
+      }
       focusWindow(existingWindow.id);
       return;
     }
@@ -42,7 +45,8 @@ export const useWindowManager = () => {
         y: Math.max(50, (window.innerHeight / 2) - (appConfig.defaultSize.height / 2) + offset)
       },
       size: appConfig.defaultSize,
-      zIndex: nextZIndex
+      zIndex: nextZIndex,
+      launchProps
     };
 
     setWindows(prev => [...prev, newWindow]);

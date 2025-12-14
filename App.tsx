@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
 import { DesktopIcons } from './components/DesktopIcons';
+import { ContextMenu, ContextMenuOption } from './components/ContextMenu';
 import { useWindowManager } from './hooks/useWindowManager';
 import { useFileSystem } from './hooks/useFileSystem';
 import { WALLPAPER_URL } from './constants';
@@ -31,6 +32,9 @@ const App: React.FC = () => {
   const fileSystem = useFileSystem();
   const [currentWallpaper, setCurrentWallpaper] = useState(WALLPAPER_URL);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Context Menu State
+  const [contextMenu, setContextMenu] = useState<{ x: number, y: number, options: ContextMenuOption[] } | null>(null);
 
   // Apply dark mode to HTML element for Tailwind
   useEffect(() => {
@@ -41,13 +45,21 @@ const App: React.FC = () => {
     }
   }, [isDarkMode]);
 
+  const handleContextMenu = useCallback((x: number, y: number, options: ContextMenuOption[]) => {
+    setContextMenu({ x, y, options });
+  }, []);
+
+  const closeContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
   // Determine active app title for Menu Bar
   const activeWindow = windows.find(w => w.id === activeWindowId);
   const activeAppTitle = activeWindow ? activeWindow.title : 'Finder';
 
-  const getAppContent = (appId: AppID) => {
+  const getAppContent = (appId: AppID, launchProps?: any) => {
     switch (appId) {
-      case AppID.FINDER: return <FinderApp fs={fileSystem} />;
+      case AppID.FINDER: return <FinderApp fs={fileSystem} launchProps={launchProps} onContextMenu={handleContextMenu} />;
       case AppID.TERMINAL: return <TerminalApp fs={fileSystem} />;
       case AppID.CALCULATOR: return <CalculatorApp />;
       case AppID.GEMINI: return <GeminiAssistant />;
@@ -76,15 +88,22 @@ const App: React.FC = () => {
     <div 
       className="relative w-screen h-screen overflow-hidden bg-cover bg-center transition-all duration-700 ease-in-out"
       style={{ backgroundImage: `url(${currentWallpaper})` }}
-      onClick={() => setActiveWindowId(null)} 
+      onClick={() => setActiveWindowId(null)}
+      onContextMenu={(e) => {
+        // Allow default context menu on standard elements, but if it bubbles to root (wallpaper), prevent default
+        // However, DesktopIcons handles its own context menu event. 
+        // This is a fallback if needed, but DesktopIcons covers the area.
+        e.preventDefault(); 
+      }}
     >
       <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
       <MenuBar activeApp={activeAppTitle} />
 
-      <DesktopIcons fs={fileSystem} onOpenApp={openApp} />
+      {/* Desktop Icons Layer - now pointer-events-auto for interactions */}
+      <DesktopIcons fs={fileSystem} onOpenApp={openApp} onContextMenu={handleContextMenu} />
 
-      {/* Desktop Area - Windows container */}
+      {/* Windows Layer */}
       <div className="absolute inset-0 top-8 bottom-20 z-0 overflow-hidden pointer-events-none">
         {windows.map(windowState => (
           <div key={windowState.id} className="pointer-events-auto">
@@ -96,13 +115,22 @@ const App: React.FC = () => {
                onFocus={focusWindow}
                onMove={updateWindowPosition}
              >
-               {getAppContent(windowState.appId)}
+               {getAppContent(windowState.appId, windowState.launchProps)}
              </Window>
           </div>
         ))}
       </div>
 
       <Dock openApps={openAppIds} onAppClick={openApp} />
+
+      {contextMenu && (
+        <ContextMenu 
+          x={contextMenu.x} 
+          y={contextMenu.y} 
+          options={contextMenu.options} 
+          onClose={closeContextMenu} 
+        />
+      )}
     </div>
   );
 };

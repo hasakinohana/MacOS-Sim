@@ -6,6 +6,7 @@ export interface FileSystemContextType {
   fileSystem: Record<string, FileItem[]>;
   addFile: (path: string, file: FileItem) => void;
   createFolder: (path: string, folderName: string) => void;
+  deleteFile: (path: string, fileName: string) => void;
 }
 
 export const useFileSystem = (): FileSystemContextType => {
@@ -32,5 +33,12 @@ export const useFileSystem = (): FileSystemContextType => {
       addFile(path, { name: folderName, type: 'folder', date: 'Today' });
   }, [addFile]);
 
-  return { fileSystem, addFile, createFolder };
+  const deleteFile = useCallback((path: string, fileName: string) => {
+    setFileSystem(prev => ({
+      ...prev,
+      [path]: prev[path]?.filter(f => f.name !== fileName) || []
+    }));
+  }, []);
+
+  return { fileSystem, addFile, createFolder, deleteFile };
 };

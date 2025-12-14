@@ -5,30 +5,52 @@ import { File, Folder } from 'lucide-react';
 
 interface DesktopIconsProps {
   fs: FileSystemContextType;
-  onOpenApp: (appId: AppID) => void;
+  onOpenApp: (appId: AppID, launchProps?: any) => void;
+  onContextMenu?: (x: number, y: number, options: any[]) => void;
 }
 
-export const DesktopIcons: React.FC<DesktopIconsProps> = ({ fs, onOpenApp }) => {
+export const DesktopIcons: React.FC<DesktopIconsProps> = ({ fs, onOpenApp, onContextMenu }) => {
   const desktopFiles = fs.fileSystem['Desktop'] || [];
   const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
 
   const handleDoubleClick = (file: FileItem) => {
-    // For now, if it's a folder, we could open Finder. 
-    // Since Finder manages its own internal path state and we don't have deep-linking yet,
-    // we just open Finder. In a real app we'd pass the path.
     if (file.type === 'folder') {
-      onOpenApp(AppID.FINDER);
+      onOpenApp(AppID.FINDER, { initialPath: file.name });
     } else {
-      // Simulate opening a file
       alert(`Opening ${file.name}...`);
     }
     setSelectedIcon(null);
   };
 
+  const handleContextMenu = (e: React.MouseEvent, file?: FileItem) => {
+    if (!onContextMenu) return;
+    
+    e.preventDefault();
+    e.stopPropagation(); // Prevent propagation to background
+
+    if (file) {
+      onContextMenu(e.clientX, e.clientY, [
+        { label: 'Open', action: () => handleDoubleClick(file) },
+        { label: 'Get Info', action: () => alert(`Name: ${file.name}\nSize: ${file.size}`) },
+        { separator: true },
+        { label: 'Move to Trash', action: () => fs.deleteFile('Desktop', file.name) },
+      ]);
+    } else {
+      // Background click
+      onContextMenu(e.clientX, e.clientY, [
+        { label: 'New Folder', action: () => fs.createFolder('Desktop', `New Folder ${desktopFiles.length + 1}`) },
+        { label: 'Get Info', action: () => alert("Desktop Info") },
+        { separator: true },
+        { label: 'Change Wallpaper', action: () => onOpenApp(AppID.SETTINGS) },
+      ]);
+    }
+  };
+
   return (
     <div 
-      className="absolute top-8 right-0 bottom-20 w-full pointer-events-none p-4 flex flex-col items-end flex-wrap content-end gap-4"
+      className="absolute top-8 right-0 bottom-20 w-full pointer-events-auto p-4 flex flex-col items-end flex-wrap content-end gap-4"
       onClick={() => setSelectedIcon(null)}
+      onContextMenu={(e) => handleContextMenu(e)}
     >
       {desktopFiles.map((file) => (
         <div
@@ -42,6 +64,7 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({ fs, onOpenApp }) => 
             e.stopPropagation();
             handleDoubleClick(file);
           }}
+          onContextMenu={(e) => handleContextMenu(e, file)}
         >
           <div className={`w-14 h-14 rounded flex items-center justify-center ${
             selectedIcon === file.name 

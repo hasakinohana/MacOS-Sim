@@ -31,6 +31,7 @@ export interface WindowState {
   size: WindowSize;
   zIndex: number;
   content?: ReactNode; // Optional custom content if needed dynamically
+  launchProps?: any; // Data passed to the app on launch
 }
 
 export interface AppConfig {

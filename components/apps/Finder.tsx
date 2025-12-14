@@ -1,20 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileItem } from '../../types';
 import { FileSystemContextType } from '../../hooks/useFileSystem';
 import { File, Folder, HardDrive, Clock, Cloud, Download, Monitor, ChevronLeft, ChevronRight, Search, Plus } from 'lucide-react';
 
 interface FinderAppProps {
   fs: FileSystemContextType;
+  launchProps?: { initialPath?: string };
+  onContextMenu?: (x: number, y: number, options: any[]) => void;
 }
 
-export const FinderApp: React.FC<FinderAppProps> = ({ fs }) => {
+export const FinderApp: React.FC<FinderAppProps> = ({ fs, launchProps, onContextMenu }) => {
   const [currentPath, setCurrentPath] = useState<string[]>(['root']);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  // Handle deep linking
+  useEffect(() => {
+    if (launchProps?.initialPath) {
+      // Very basic path resolution for this flat-file-system simulation
+      // If path is "Desktop", map to ['root', 'Desktop']
+      // If path matches a root key like "Desktop" or "Documents", go there.
+      const path = launchProps.initialPath;
+      if (path === 'Desktop' || path === 'root' || path === 'Documents' || path === 'Downloads') {
+         setCurrentPath(['root', path === 'root' ? 'root' : path]);
+      } else {
+         // Fallback or handle deep nesting if FS supported it fully
+         // For now, assume it's a top level folder name
+         setCurrentPath(['root', path]);
+      }
+    }
+  }, [launchProps]);
 
   const currentFolder = currentPath[currentPath.length - 1];
   const files = fs.fileSystem[currentFolder] || [];
   
-  // Use "Documents" as display name for root mostly to match sidebar
   const displayPath = currentFolder === 'root' ? 'Recents' : currentFolder;
 
   const handleDoubleClick = (file: FileItem) => {
@@ -34,6 +52,30 @@ export const FinderApp: React.FC<FinderAppProps> = ({ fs }) => {
   const handleCreateFolder = () => {
     const name = `New Folder ${files.filter(f => f.type === 'folder').length + 1}`;
     fs.createFolder(currentFolder, name);
+  };
+
+  const handleContextMenu = (e: React.MouseEvent, file: FileItem) => {
+    if (onContextMenu) {
+      e.preventDefault();
+      e.stopPropagation();
+      onContextMenu(e.clientX, e.clientY, [
+        { label: 'Open', action: () => handleDoubleClick(file) },
+        { label: 'Get Info', action: () => alert(`Info: ${file.name}\nSize: ${file.size || '--'}`) },
+        { separator: true },
+        { label: 'Move to Trash', action: () => fs.deleteFile(currentFolder, file.name) },
+      ]);
+    }
+  };
+
+  const handleBackgroundContextMenu = (e: React.MouseEvent) => {
+    if (onContextMenu) {
+      e.preventDefault();
+      e.stopPropagation();
+      onContextMenu(e.clientX, e.clientY, [
+        { label: 'New Folder', action: handleCreateFolder },
+        { label: 'Get Info', action: () => alert(`Folder: ${currentFolder}`) },
+      ]);
+    }
   };
 
   const SidebarItem = ({ icon: Icon, label, active = false, onClick }: { icon: any, label: string, active?: boolean, onClick?: () => void }) => (
@@ -99,7 +141,7 @@ export const FinderApp: React.FC<FinderAppProps> = ({ fs }) => {
         </div>
 
         {/* File List */}
-        <div className="flex-1 p-2 overflow-auto" onClick={() => setSelectedFile(null)}>
+        <div className="flex-1 p-2 overflow-auto" onClick={() => setSelectedFile(null)} onContextMenu={handleBackgroundContextMenu}>
           <div className="grid grid-cols-1 gap-1">
             <div className="grid grid-cols-12 text-xs font-medium text-gray-500 px-4 py-2 border-b border-gray-100 select-none">
               <div className="col-span-6">Name</div>
@@ -112,6 +154,7 @@ export const FinderApp: React.FC<FinderAppProps> = ({ fs }) => {
                 key={idx}
                 onClick={(e) => { e.stopPropagation(); setSelectedFile(file.name); }}
                 onDoubleClick={(e) => { e.stopPropagation(); handleDoubleClick(file); }}
+                onContextMenu={(e) => handleContextMenu(e, file)}
                 className={`grid grid-cols-12 items-center px-4 py-2 text-sm rounded-md cursor-default select-none ${
                   selectedFile === file.name ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 odd:bg-white'
                 }`}
