@@ -81,3 +81,30 @@ export const INITIAL_FILES: FileItem[] = [
   { name: 'Budget.xlsx', type: 'file', size: '24 KB', date: 'Sep 01, 2023' },
   { name: 'vacation_photo.jpg', type: 'file', size: '4.5 MB', date: 'Jul 20, 2023' },
 ];
+
+export const FILE_SYSTEM: Record<string, FileItem[]> = {
+  '~': INITIAL_FILES, // Root mapped to ~ for Terminal
+  'root': INITIAL_FILES, // Internal root for Finder
+  'Documents': [
+     { name: 'Work', type: 'folder', date: 'Oct 2' },
+     { name: 'Personal', type: 'folder', date: 'Sep 15' },
+     { name: 'Resume_v2.pdf', type: 'file', size: '1.4 MB', date: 'Today' }
+  ],
+  'Downloads': [
+     { name: 'installer.dmg', type: 'file', size: '150 MB', date: 'Today' },
+     { name: 'image_4.png', type: 'file', size: '2.1 MB', date: 'Yesterday' }
+  ],
+  'Projects': [
+     { name: 'Website', type: 'folder', date: 'Aug 10' },
+     { name: 'App Design', type: 'folder', date: 'Oct 1' }
+  ],
+  'Desktop': [
+    { name: 'Screenshot_1.png', type: 'file', size: '2.4 MB', date: 'Today' }
+  ],
+  'Work': [
+     { name: 'Q4_Plan.docx', type: 'file', size: '45 KB', date: 'Oct 2' }
+  ],
+  'Personal': [
+     { name: 'Diary.txt', type: 'file', size: '12 KB', date: 'Sep 15' }
+  ]
+};

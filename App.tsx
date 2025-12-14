@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
 import { useWindowManager } from './hooks/useWindowManager';
+import { useFileSystem } from './hooks/useFileSystem';
 import { WALLPAPER_URL } from './constants';
 import { AppID } from './types';
 import { FinderApp } from './components/apps/Finder';
@@ -25,17 +26,39 @@ const App: React.FC = () => {
     updateWindowPosition 
   } = useWindowManager();
 
+  const fileSystem = useFileSystem();
   const [currentWallpaper, setCurrentWallpaper] = useState(WALLPAPER_URL);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  // Apply dark mode to HTML element for Tailwind
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  // Determine active app title for Menu Bar
+  const activeWindow = windows.find(w => w.id === activeWindowId);
+  const activeAppTitle = activeWindow ? activeWindow.title : 'Finder';
 
   const getAppContent = (appId: AppID) => {
     switch (appId) {
-      case AppID.FINDER: return <FinderApp />;
-      case AppID.TERMINAL: return <TerminalApp />;
+      case AppID.FINDER: return <FinderApp fs={fileSystem} />;
+      case AppID.TERMINAL: return <TerminalApp fs={fileSystem} />;
       case AppID.CALCULATOR: return <CalculatorApp />;
       case AppID.GEMINI: return <GeminiAssistant />;
       case AppID.NOTES: return <NotesApp />;
       case AppID.PHOTOS: return <PhotosApp />;
-      case AppID.SETTINGS: return <SettingsApp currentWallpaper={currentWallpaper} onWallpaperChange={setCurrentWallpaper} />;
+      case AppID.SETTINGS: return (
+        <SettingsApp 
+          currentWallpaper={currentWallpaper} 
+          onWallpaperChange={setCurrentWallpaper} 
+          isDarkMode={isDarkMode}
+          setDarkMode={setIsDarkMode}
+        />
+      );
       default: return (
         <div className="flex items-center justify-center h-full bg-white text-gray-400">
            Work in progress...
@@ -54,7 +77,7 @@ const App: React.FC = () => {
     >
       <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
-      <MenuBar />
+      <MenuBar activeApp={activeAppTitle} />
 
       {/* Desktop Area - Windows container */}
       <div className="absolute inset-0 top-8 bottom-20 z-0 overflow-hidden">

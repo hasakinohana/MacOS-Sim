@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Apple, Wifi, Search, Battery } from 'lucide-react';
 
-export const MenuBar: React.FC = () => {
+interface MenuBarProps {
+  activeApp: string;
+}
+
+export const MenuBar: React.FC<MenuBarProps> = ({ activeApp }) => {
   const [time, setTime] = useState(new Date());
 
   useEffect(() => {
@@ -21,7 +25,7 @@ export const MenuBar: React.FC = () => {
     <div className="h-8 w-full bg-white/40 backdrop-blur-md shadow-sm fixed top-0 left-0 z-50 flex items-center justify-between px-4 text-sm select-none text-gray-800 dark:text-white dark:bg-black/30 transition-colors">
       <div className="flex items-center space-x-4 font-medium">
         <Apple size={18} className="cursor-pointer hover:opacity-70" />
-        <span className="font-bold cursor-pointer hidden sm:block">Finder</span>
+        <span className="font-bold cursor-pointer hidden sm:block">{activeApp}</span>
         <span className="cursor-pointer hover:opacity-70 hidden sm:block">File</span>
         <span className="cursor-pointer hover:opacity-70 hidden sm:block">Edit</span>
         <span className="cursor-pointer hover:opacity-70 hidden sm:block">View</span>
