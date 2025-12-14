@@ -16,10 +16,14 @@ export const TerminalApp: React.FC<TerminalAppProps> = ({ fs }) => {
   const [history, setHistory] = useState<string[]>([WELCOME_MSG]);
   const [currentLine, setCurrentLine] = useState('');
   const [cwd, setCwd] = useState<string>('~'); // Current Working Directory
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Scroll to bottom whenever history changes
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }, [history]);
 
   const executeCommand = (cmd: string) => {
@@ -132,27 +136,36 @@ export const TerminalApp: React.FC<TerminalAppProps> = ({ fs }) => {
     }
   };
 
+  const focusInput = () => {
+    inputRef.current?.focus();
+  };
+
   return (
-    <div className="h-full w-full bg-[#1e1e1e] text-white p-2 font-mono text-sm overflow-auto rounded-b-lg shadow-inner" onClick={() => document.getElementById('term-input')?.focus()}>
+    <div 
+      ref={containerRef}
+      className="h-full w-full bg-[#1e1e1e] text-white p-2 font-mono text-sm overflow-auto shadow-inner" 
+      onClick={focusInput}
+    >
       <div className="whitespace-pre-wrap text-gray-300">
         {history.map((line, i) => (
-          <div key={i} className="mb-1 leading-snug">{line}</div>
+          <div key={i} className="mb-1 leading-snug break-words">{line}</div>
         ))}
       </div>
       <div className="flex items-center">
         <span className="text-green-400 mr-2 shrink-0">guest_user@macbook {cwd} %</span>
         <input
-          id="term-input"
+          ref={inputRef}
           type="text"
           value={currentLine}
           onChange={(e) => setCurrentLine(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="bg-transparent border-none outline-none flex-grow text-white caret-gray-400"
+          className="bg-transparent border-none outline-none flex-grow text-white caret-gray-400 w-full"
           autoFocus
           autoComplete="off"
         />
       </div>
-      <div ref={bottomRef} />
+      {/* Spacer to ensure bottom scrolling visibility */}
+      <div className="h-4" />
     </div>
   );
 };

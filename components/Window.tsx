@@ -81,7 +81,7 @@ export const Window: React.FC<WindowProps> = ({
     >
       {/* Window Header */}
       <div 
-        className="h-8 bg-[#e9e8e6] border-b border-[#d1d1d1] flex items-center justify-between px-3 select-none"
+        className="h-8 bg-[#e9e8e6] border-b border-[#d1d1d1] flex items-center justify-between px-3 select-none flex-shrink-0"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
@@ -104,7 +104,7 @@ export const Window: React.FC<WindowProps> = ({
       </div>
 
       {/* Window Content */}
-      <div className="flex-1 relative bg-white">
+      <div className="flex-1 relative bg-white min-h-0 flex flex-col">
         {/* An invisible overlay to capture clicks when window is not active, bringing it to front without interacting with content immediately if desired.
             However, standard behavior allows interaction immediately. We just need to ensure clicks inside trigger focus. 
         */}
