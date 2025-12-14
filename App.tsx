@@ -53,6 +53,16 @@ const App: React.FC = () => {
     setContextMenu(null);
   }, []);
 
+  const handleDockOpenFolder = (path: string) => {
+    openApp(AppID.FINDER, { initialPath: path });
+  };
+
+  const handleDockCloseApp = (appId: AppID) => {
+    // Close all windows for this app
+    const appWindows = windows.filter(w => w.appId === appId);
+    appWindows.forEach(w => closeWindow(w.id));
+  };
+
   // Determine active app title for Menu Bar
   const activeWindow = windows.find(w => w.id === activeWindowId);
   const activeAppTitle = activeWindow ? activeWindow.title : 'Finder';
@@ -121,7 +131,14 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      <Dock openApps={openAppIds} onAppClick={openApp} />
+      <Dock 
+        openApps={openAppIds} 
+        onAppClick={openApp} 
+        onOpenFolder={handleDockOpenFolder}
+        onCloseApp={handleDockCloseApp}
+        fs={fileSystem}
+        onContextMenu={handleContextMenu}
+      />
 
       {contextMenu && (
         <ContextMenu 

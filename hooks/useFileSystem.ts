@@ -7,6 +7,7 @@ export interface FileSystemContextType {
   addFile: (path: string, file: FileItem) => void;
   createFolder: (path: string, folderName: string) => void;
   deleteFile: (path: string, fileName: string) => void;
+  emptyTrash: () => void;
 }
 
 export const useFileSystem = (): FileSystemContextType => {
@@ -40,5 +41,12 @@ export const useFileSystem = (): FileSystemContextType => {
     }));
   }, []);
 
-  return { fileSystem, addFile, createFolder, deleteFile };
+  const emptyTrash = useCallback(() => {
+    setFileSystem(prev => ({
+      ...prev,
+      'Trash': []
+    }));
+  }, []);
+
+  return { fileSystem, addFile, createFolder, deleteFile, emptyTrash };
 };
