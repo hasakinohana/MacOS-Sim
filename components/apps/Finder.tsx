@@ -20,7 +20,8 @@ import {
   Trash2,
   Wifi,
   Smartphone,
-  Laptop
+  Laptop,
+  Home
 } from 'lucide-react';
 
 interface FinderAppProps {
@@ -80,7 +81,7 @@ export const FinderApp: React.FC<FinderAppProps> = ({ fs, launchProps, onContext
   const currentFolder = currentPath[currentPath.length - 1];
   
   // Resolve path for display (e.g., 'root' -> 'Recents')
-  const displayPath = currentFolder === 'root' ? 'Recents' : currentFolder;
+  const displayPath = currentFolder === 'root' ? 'Home' : currentFolder;
 
   // Handle Deep Linking / Launch Props
   useEffect(() => {
@@ -251,6 +252,7 @@ export const FinderApp: React.FC<FinderAppProps> = ({ fs, launchProps, onContext
           <SidebarItem icon={Monitor} label="Desktop" path={['root', 'Desktop']} active={currentFolder === 'Desktop'} onClick={navigateTo} />
           <SidebarItem icon={File} label="Documents" path={['root', 'Documents']} active={currentFolder === 'Documents'} onClick={navigateTo} />
           <SidebarItem icon={Download} label="Downloads" path={['root', 'Downloads']} active={currentFolder === 'Downloads'} onClick={navigateTo} />
+          <SidebarItem icon={Home} label="guest" path={['root']} active={currentFolder === 'root'} onClick={navigateTo} />
           <SidebarItem icon={Trash2} label="Trash" path={['root', 'Trash']} active={currentFolder === 'Trash'} onClick={navigateTo} />
         </div>
         <div>

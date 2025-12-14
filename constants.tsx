@@ -74,9 +74,11 @@ export const APPS: Record<AppID, AppConfig> = {
 };
 
 export const INITIAL_FILES: FileItem[] = [
-  { name: 'Projects', type: 'folder', date: 'Today, 10:23 AM' },
+  { name: 'Desktop', type: 'folder', date: 'Today' },
+  { name: 'Applications', type: 'folder', date: 'Today' },
   { name: 'Documents', type: 'folder', date: 'Yesterday, 4:12 PM' },
   { name: 'Downloads', type: 'folder', date: 'Oct 24, 2023' },
+  { name: 'Projects', type: 'folder', date: 'Today, 10:23 AM' },
   { name: 'Resume.pdf', type: 'file', size: '1.2 MB', date: 'Aug 15, 2023', content: 'Simulation of a PDF file...' },
   { name: 'Budget.xlsx', type: 'file', size: '24 KB', date: 'Sep 01, 2023' },
   { name: 'vacation_photo.jpg', type: 'file', size: '4.5 MB', date: 'Jul 20, 2023', content: 'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=1000&auto=format&fit=crop' },
@@ -85,6 +87,7 @@ export const INITIAL_FILES: FileItem[] = [
 export const FILE_SYSTEM: Record<string, FileItem[]> = {
   '~': INITIAL_FILES, // Root mapped to ~ for Terminal
   'root': INITIAL_FILES, // Internal root for Finder
+  'Guest': INITIAL_FILES, // User Home
   'Documents': [
      { name: 'Work', type: 'folder', date: 'Oct 2' },
      { name: 'Personal', type: 'folder', date: 'Sep 15' },
