@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Search, List } from 'lucide-react';
 
 interface Note {
@@ -6,6 +6,10 @@ interface Note {
   title: string;
   content: string;
   date: string;
+}
+
+interface NotesAppProps {
+  launchProps?: { initialNote?: { title: string, content: string } };
 }
 
 const INITIAL_NOTES: Note[] = [
@@ -29,10 +33,23 @@ const INITIAL_NOTES: Note[] = [
   }
 ];
 
-export const NotesApp: React.FC = () => {
+export const NotesApp: React.FC<NotesAppProps> = ({ launchProps }) => {
   const [notes, setNotes] = useState<Note[]>(INITIAL_NOTES);
   const [selectedNoteId, setSelectedNoteId] = useState<string>(INITIAL_NOTES[0].id);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    if (launchProps?.initialNote) {
+       const newNote: Note = {
+         id: `imported-${Date.now()}`,
+         title: launchProps.initialNote.title,
+         content: launchProps.initialNote.content,
+         date: 'Imported'
+       };
+       setNotes(prev => [newNote, ...prev]);
+       setSelectedNoteId(newNote.id);
+    }
+  }, [launchProps]);
 
   const selectedNote = notes.find(n => n.id === selectedNoteId);
 

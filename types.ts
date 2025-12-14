@@ -44,7 +44,8 @@ export interface AppConfig {
 
 export interface FileItem {
   name: string;
-  type: 'folder' | 'file';
+  type: 'folder' | 'file' | 'app';
   size?: string;
   date?: string;
+  content?: string; // text content or image url
 }

@@ -17,7 +17,15 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({ fs, onOpenApp, onCon
     if (file.type === 'folder') {
       onOpenApp(AppID.FINDER, { initialPath: file.name });
     } else {
-      alert(`Opening ${file.name}...`);
+      // File handling logic
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      if (['png', 'jpg', 'jpeg'].includes(ext || '')) {
+         onOpenApp(AppID.PHOTOS, { initialPhoto: file.content });
+      } else if (['txt', 'md', 'json'].includes(ext || '')) {
+         onOpenApp(AppID.NOTES, { initialNote: { title: file.name, content: file.content || '' } });
+      } else {
+         alert(`Cannot open ${file.name}`);
+      }
     }
     setSelectedIcon(null);
   };

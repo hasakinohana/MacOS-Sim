@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, Image as ImageIcon, Clock, LayoutGrid, ChevronLeft } from 'lucide-react';
+
+interface PhotosAppProps {
+  launchProps?: { initialPhoto?: string };
+}
 
 const PHOTOS_DATA = [
   { id: 1, url: 'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?q=80&w=1000&auto=format&fit=crop', title: 'Mountains' },
@@ -13,9 +17,15 @@ const PHOTOS_DATA = [
   { id: 9, url: 'https://images.unsplash.com/photo-1682687221175-91348141193d?q=80&w=1000&auto=format&fit=crop', title: 'Sky' },
 ];
 
-export const PhotosApp: React.FC = () => {
+export const PhotosApp: React.FC<PhotosAppProps> = ({ launchProps }) => {
   const [activeTab, setActiveTab] = useState<'library' | 'favorites'>('library');
   const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (launchProps?.initialPhoto) {
+      setSelectedPhoto(launchProps.initialPhoto);
+    }
+  }, [launchProps]);
 
   const SidebarItem = ({ icon: Icon, label, id, active = false }: { icon: any, label: string, id: string, active?: boolean }) => (
     <div 

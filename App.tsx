@@ -59,12 +59,12 @@ const App: React.FC = () => {
 
   const getAppContent = (appId: AppID, launchProps?: any) => {
     switch (appId) {
-      case AppID.FINDER: return <FinderApp fs={fileSystem} launchProps={launchProps} onContextMenu={handleContextMenu} />;
+      case AppID.FINDER: return <FinderApp fs={fileSystem} launchProps={launchProps} onContextMenu={handleContextMenu} onOpenApp={openApp} />;
       case AppID.TERMINAL: return <TerminalApp fs={fileSystem} />;
       case AppID.CALCULATOR: return <CalculatorApp />;
       case AppID.GEMINI: return <GeminiAssistant />;
-      case AppID.NOTES: return <NotesApp />;
-      case AppID.PHOTOS: return <PhotosApp />;
+      case AppID.NOTES: return <NotesApp launchProps={launchProps} />;
+      case AppID.PHOTOS: return <PhotosApp launchProps={launchProps} />;
       case AppID.SETTINGS: return (
         <SettingsApp 
           currentWallpaper={currentWallpaper} 
