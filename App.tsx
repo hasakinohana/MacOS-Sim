@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
+import { DesktopIcons } from './components/DesktopIcons';
 import { useWindowManager } from './hooks/useWindowManager';
 import { useFileSystem } from './hooks/useFileSystem';
 import { WALLPAPER_URL } from './constants';
@@ -18,6 +19,7 @@ const App: React.FC = () => {
   const { 
     windows, 
     activeWindowId,
+    setActiveWindowId,
     openApp, 
     closeWindow, 
     minimizeWindow, 
@@ -74,25 +76,29 @@ const App: React.FC = () => {
     <div 
       className="relative w-screen h-screen overflow-hidden bg-cover bg-center transition-all duration-700 ease-in-out"
       style={{ backgroundImage: `url(${currentWallpaper})` }}
+      onClick={() => setActiveWindowId(null)} 
     >
       <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
       <MenuBar activeApp={activeAppTitle} />
 
+      <DesktopIcons fs={fileSystem} onOpenApp={openApp} />
+
       {/* Desktop Area - Windows container */}
-      <div className="absolute inset-0 top-8 bottom-20 z-0 overflow-hidden">
+      <div className="absolute inset-0 top-8 bottom-20 z-0 overflow-hidden pointer-events-none">
         {windows.map(windowState => (
-          <Window
-            key={windowState.id}
-            windowState={windowState}
-            onClose={closeWindow}
-            onMinimize={minimizeWindow}
-            onMaximize={maximizeWindow}
-            onFocus={focusWindow}
-            onMove={updateWindowPosition}
-          >
-            {getAppContent(windowState.appId)}
-          </Window>
+          <div key={windowState.id} className="pointer-events-auto">
+             <Window
+               windowState={windowState}
+               onClose={closeWindow}
+               onMinimize={minimizeWindow}
+               onMaximize={maximizeWindow}
+               onFocus={focusWindow}
+               onMove={updateWindowPosition}
+             >
+               {getAppContent(windowState.appId)}
+             </Window>
+          </div>
         ))}
       </div>
 

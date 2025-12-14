@@ -99,12 +99,17 @@ export const FILE_SYSTEM: Record<string, FileItem[]> = {
      { name: 'App Design', type: 'folder', date: 'Oct 1' }
   ],
   'Desktop': [
-    { name: 'Screenshot_1.png', type: 'file', size: '2.4 MB', date: 'Today' }
+    { name: 'Work Projects', type: 'folder', date: 'Today' },
+    { name: 'Screenshot_1.png', type: 'file', size: '2.4 MB', date: 'Today' },
+    { name: 'Notes.txt', type: 'file', size: '1 KB', date: 'Yesterday' }
   ],
   'Work': [
      { name: 'Q4_Plan.docx', type: 'file', size: '45 KB', date: 'Oct 2' }
   ],
   'Personal': [
      { name: 'Diary.txt', type: 'file', size: '12 KB', date: 'Sep 15' }
+  ],
+  'Work Projects': [
+      { name: 'Design Specs', type: 'folder', date: 'Oct 20' }
   ]
 };

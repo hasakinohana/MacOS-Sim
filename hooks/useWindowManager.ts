@@ -99,6 +99,7 @@ export const useWindowManager = () => {
   return {
     windows,
     activeWindowId,
+    setActiveWindowId,
     openApp,
     closeWindow,
     minimizeWindow,
