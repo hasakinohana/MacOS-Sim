@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
@@ -9,6 +9,9 @@ import { FinderApp } from './components/apps/Finder';
 import { TerminalApp } from './components/apps/Terminal';
 import { CalculatorApp } from './components/apps/Calculator';
 import { GeminiAssistant } from './components/apps/GeminiAssistant';
+import { NotesApp } from './components/apps/Notes';
+import { PhotosApp } from './components/apps/Photos';
+import { SettingsApp } from './components/apps/Settings';
 
 const App: React.FC = () => {
   const { 
@@ -22,12 +25,17 @@ const App: React.FC = () => {
     updateWindowPosition 
   } = useWindowManager();
 
+  const [currentWallpaper, setCurrentWallpaper] = useState(WALLPAPER_URL);
+
   const getAppContent = (appId: AppID) => {
     switch (appId) {
       case AppID.FINDER: return <FinderApp />;
       case AppID.TERMINAL: return <TerminalApp />;
       case AppID.CALCULATOR: return <CalculatorApp />;
       case AppID.GEMINI: return <GeminiAssistant />;
+      case AppID.NOTES: return <NotesApp />;
+      case AppID.PHOTOS: return <PhotosApp />;
+      case AppID.SETTINGS: return <SettingsApp currentWallpaper={currentWallpaper} onWallpaperChange={setCurrentWallpaper} />;
       default: return (
         <div className="flex items-center justify-center h-full bg-white text-gray-400">
            Work in progress...
@@ -41,8 +49,8 @@ const App: React.FC = () => {
 
   return (
     <div 
-      className="relative w-screen h-screen overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(${WALLPAPER_URL})` }}
+      className="relative w-screen h-screen overflow-hidden bg-cover bg-center transition-all duration-700 ease-in-out"
+      style={{ backgroundImage: `url(${currentWallpaper})` }}
     >
       <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 

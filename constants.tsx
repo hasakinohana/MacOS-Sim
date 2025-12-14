@@ -12,6 +12,15 @@ import {
 
 export const WALLPAPER_URL = "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2070&auto=format&fit=crop";
 
+export const WALLPAPERS = [
+  { name: "Monterey", url: "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?q=80&w=2070&auto=format&fit=crop" },
+  { name: "Big Sur", url: "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2070&auto=format&fit=crop" },
+  { name: "Yosemite", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop" },
+  { name: "Sierra", url: "https://images.unsplash.com/photo-1536431311719-398b670a9473?q=80&w=2070&auto=format&fit=crop" },
+  { name: "Mojave", url: "https://images.unsplash.com/photo-1502481851512-e9e2529bfbf9?q=80&w=2069&auto=format&fit=crop" },
+  { name: "Abstract", url: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2070&auto=format&fit=crop" }
+];
+
 export const APPS: Record<AppID, AppConfig> = {
   [AppID.FINDER]: {
     id: AppID.FINDER,
@@ -30,7 +39,7 @@ export const APPS: Record<AppID, AppConfig> = {
   [AppID.GEMINI]: {
     id: AppID.GEMINI,
     title: 'Gemini Assistant',
-    icon: Bot, // Using Bot icon for AI
+    icon: Bot, 
     defaultSize: { width: 400, height: 600 },
     color: 'bg-gradient-to-br from-blue-400 to-purple-500'
   },
@@ -38,7 +47,7 @@ export const APPS: Record<AppID, AppConfig> = {
     id: AppID.NOTES,
     title: 'Notes',
     icon: StickyNote,
-    defaultSize: { width: 400, height: 500 },
+    defaultSize: { width: 550, height: 400 },
     color: 'bg-yellow-400'
   },
   [AppID.CALCULATOR]: {
@@ -59,7 +68,7 @@ export const APPS: Record<AppID, AppConfig> = {
     id: AppID.SETTINGS,
     title: 'Settings',
     icon: Settings,
-    defaultSize: { width: 500, height: 350 },
+    defaultSize: { width: 600, height: 400 },
     color: 'bg-gray-500'
   },
 };
