@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Search, List } from 'lucide-react';
+import { Plus, Trash2, Search, List, Save } from 'lucide-react';
+import { FileSystemContextType } from '../../hooks/useFileSystem';
 
 interface Note {
   id: string;
   title: string;
   content: string;
   date: string;
+  originPath?: string; // Path where this note is saved as a file
+  originName?: string; // Filename if saved
 }
 
 interface NotesAppProps {
-  launchProps?: { initialNote?: { title: string, content: string } };
+  launchProps?: { 
+    initialNote?: { title: string, content: string },
+    filePath?: string
+  };
+  fs?: FileSystemContextType;
 }
 
 const INITIAL_NOTES: Note[] = [
@@ -33,21 +40,52 @@ const INITIAL_NOTES: Note[] = [
   }
 ];
 
-export const NotesApp: React.FC<NotesAppProps> = ({ launchProps }) => {
+export const NotesApp: React.FC<NotesAppProps> = ({ launchProps, fs }) => {
   const [notes, setNotes] = useState<Note[]>(INITIAL_NOTES);
   const [selectedNoteId, setSelectedNoteId] = useState<string>(INITIAL_NOTES[0].id);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Handle opening files from Finder/Desktop
   useEffect(() => {
     if (launchProps?.initialNote) {
-       const newNote: Note = {
-         id: `imported-${Date.now()}`,
-         title: launchProps.initialNote.title,
-         content: launchProps.initialNote.content,
-         date: 'Imported'
-       };
-       setNotes(prev => [newNote, ...prev]);
-       setSelectedNoteId(newNote.id);
+       const { title, content } = launchProps.initialNote;
+       const path = launchProps.filePath;
+
+       setNotes(prev => {
+         // Check if this file is already open to avoid duplicates
+         const existingNoteIndex = prev.findIndex(n => 
+           n.originPath === path && n.originName === title
+         );
+
+         const newNote: Note = {
+           id: existingNoteIndex >= 0 ? prev[existingNoteIndex].id : `imported-${Date.now()}`,
+           title: title,
+           content: content,
+           date: 'Imported',
+           originPath: path,
+           originName: title
+         };
+
+         if (existingNoteIndex >= 0) {
+           // Update existing note with fresh content from file system
+           const updatedNotes = [...prev];
+           updatedNotes[existingNoteIndex] = newNote;
+           // We need to defer setting ID to ensure render cycle catches up? 
+           // Actually setting state here is fine.
+           return updatedNotes;
+         }
+
+         return [newNote, ...prev];
+       });
+
+       // Find the ID we just used/created
+       // Since setNotes is async, we can't rely on 'notes' state immediately.
+       // However, we know the logic we just used.
+       setNotes(currentNotes => {
+          const targetNote = currentNotes.find(n => n.originPath === path && n.originName === title);
+          if (targetNote) setSelectedNoteId(targetNote.id);
+          return currentNotes;
+       });
     }
   }, [launchProps]);
 
@@ -57,6 +95,7 @@ export const NotesApp: React.FC<NotesAppProps> = ({ launchProps }) => {
     setNotes(prev => prev.map(note => {
       if (note.id === selectedNoteId) {
         // Simple heuristic: First line is title
+        // We only update the display title, not the originName (filename)
         const title = content.split('\n')[0] || 'New Note';
         return { ...note, content, title };
       }
@@ -85,6 +124,46 @@ export const NotesApp: React.FC<NotesAppProps> = ({ launchProps }) => {
     }
   };
 
+  const handleSave = () => {
+    if (!selectedNote || !fs) return;
+
+    if (selectedNote.originPath && selectedNote.originName) {
+      // Update existing file
+      fs.updateFile(selectedNote.originPath, {
+        name: selectedNote.originName,
+        content: selectedNote.content,
+        type: 'file',
+        date: 'Today',
+        size: `${selectedNote.content.length} B`
+      });
+      // Visual feedback
+      const originalTitle = selectedNote.title;
+      setNotes(prev => prev.map(n => n.id === selectedNoteId ? { ...n, title: 'Saved!' } : n));
+      setTimeout(() => {
+         setNotes(prev => prev.map(n => n.id === selectedNoteId ? { ...n, title: originalTitle } : n));
+      }, 1000);
+    } else {
+      // Save as new file in Documents
+      // Sanitize filename
+      const safeTitle = selectedNote.title.replace(/[^a-z0-9]/gi, '_').substring(0, 20) || 'Untitled';
+      const fileName = `${safeTitle}.txt`;
+      const targetPath = 'Documents';
+      
+      fs.addFile(targetPath, {
+        name: fileName,
+        content: selectedNote.content,
+        type: 'file',
+        date: 'Today',
+        size: `${selectedNote.content.length} B`
+      });
+      
+      // Update local note to link to this new file
+      setNotes(prev => prev.map(n => n.id === selectedNoteId ? { ...n, originPath: targetPath, originName: fileName } : n));
+      
+      alert(`Saved to ${targetPath}/${fileName}`);
+    }
+  };
+
   const filteredNotes = notes.filter(n => 
     n.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     n.content.toLowerCase().includes(searchQuery.toLowerCase())
@@ -101,12 +180,17 @@ export const NotesApp: React.FC<NotesAppProps> = ({ launchProps }) => {
                <List size={18} />
              </button>
            </div>
-           <button onClick={handleDeleteNote} className="p-1.5 hover:bg-gray-200 rounded text-gray-500 disabled:opacity-30" disabled={!selectedNoteId}>
-             <Trash2 size={18} />
-           </button>
-           <button onClick={handleAddNote} className="p-1.5 hover:bg-gray-200 rounded text-gray-500">
-             <Plus size={18} />
-           </button>
+           <div className="flex items-center space-x-1">
+             <button onClick={handleDeleteNote} className="p-1.5 hover:bg-gray-200 rounded text-gray-500 disabled:opacity-30" disabled={!selectedNoteId} title="Delete">
+               <Trash2 size={18} />
+             </button>
+             <button onClick={handleSave} className="p-1.5 hover:bg-gray-200 rounded text-gray-500 disabled:opacity-30" disabled={!selectedNoteId} title="Save">
+               <Save size={18} />
+             </button>
+             <button onClick={handleAddNote} className="p-1.5 hover:bg-gray-200 rounded text-gray-500" title="New Note">
+               <Plus size={18} />
+             </button>
+           </div>
         </div>
 
         {/* Search */}
@@ -154,13 +238,14 @@ export const NotesApp: React.FC<NotesAppProps> = ({ launchProps }) => {
       <div className="flex-1 flex flex-col bg-white">
         {selectedNote ? (
           <div className="flex-1 flex flex-col h-full relative">
-            <div className="text-xs text-gray-400 text-center py-3 select-none">
-              {selectedNote.date}
+            <div className="text-xs text-gray-400 text-center py-3 select-none flex justify-center items-center space-x-2">
+              <span>{selectedNote.date}</span>
+              {selectedNote.originName && <span className="bg-gray-100 px-1.5 rounded text-gray-500">{selectedNote.originName}</span>}
             </div>
             <textarea
               value={selectedNote.content}
               onChange={(e) => handleUpdateNote(e.target.value)}
-              className="flex-1 w-full p-6 pt-2 resize-none outline-none border-none text-base leading-relaxed text-gray-800 placeholder-gray-300"
+              className="flex-1 w-full p-6 pt-2 resize-none outline-none border-none text-base leading-relaxed text-gray-800 placeholder-gray-300 font-sans"
               placeholder="Type your note here..."
             />
           </div>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { FILE_SYSTEM as INITIAL_FS } from '../constants';
 import { FileItem } from '../types';
 
@@ -7,11 +7,32 @@ export interface FileSystemContextType {
   addFile: (path: string, file: FileItem) => void;
   createFolder: (path: string, folderName: string) => void;
   deleteFile: (path: string, fileName: string) => void;
+  updateFile: (path: string, file: FileItem) => void;
   emptyTrash: () => void;
 }
 
+const STORAGE_KEY = 'macos-web-filesystem-v1';
+
 export const useFileSystem = (): FileSystemContextType => {
-  const [fileSystem, setFileSystem] = useState<Record<string, FileItem[]>>(INITIAL_FS);
+  // Initialize state from localStorage if available, otherwise use default
+  const [fileSystem, setFileSystem] = useState<Record<string, FileItem[]>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : INITIAL_FS;
+    } catch (e) {
+      console.error("Failed to load filesystem from storage", e);
+      return INITIAL_FS;
+    }
+  });
+
+  // Persist to localStorage whenever state changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(fileSystem));
+    } catch (e) {
+      console.error("Failed to save filesystem to storage", e);
+    }
+  }, [fileSystem]);
 
   const addFile = useCallback((path: string, file: FileItem) => {
     setFileSystem(prev => {
@@ -22,7 +43,6 @@ export const useFileSystem = (): FileSystemContextType => {
       const newFS = { ...prev, [path]: [...currentFiles, file] };
       
       // If it's a folder, initialize its content entry if it doesn't exist
-      // Note: This simulation uses a flat structure where folder names are unique keys
       if (file.type === 'folder' && !newFS[file.name]) {
          newFS[file.name] = [];
       }
@@ -41,6 +61,20 @@ export const useFileSystem = (): FileSystemContextType => {
     }));
   }, []);
 
+  const updateFile = useCallback((path: string, file: FileItem) => {
+    setFileSystem(prev => {
+      const currentFiles = prev[path] || [];
+      const index = currentFiles.findIndex(f => f.name === file.name);
+      
+      if (index === -1) return prev; // File not found
+
+      const newFiles = [...currentFiles];
+      newFiles[index] = { ...newFiles[index], ...file };
+      
+      return { ...prev, [path]: newFiles };
+    });
+  }, []);
+
   const emptyTrash = useCallback(() => {
     setFileSystem(prev => ({
       ...prev,
@@ -48,5 +82,5 @@ export const useFileSystem = (): FileSystemContextType => {
     }));
   }, []);
 
-  return { fileSystem, addFile, createFolder, deleteFile, emptyTrash };
+  return { fileSystem, addFile, createFolder, deleteFile, updateFile, emptyTrash };
 };

@@ -24,7 +24,7 @@ const App: React.FC = () => {
     openApp, 
     closeWindow, 
     minimizeWindow, 
-    maximizeWindow,
+    maximizeWindow, 
     focusWindow, 
     updateWindowPosition 
   } = useWindowManager();
@@ -73,7 +73,7 @@ const App: React.FC = () => {
       case AppID.TERMINAL: return <TerminalApp fs={fileSystem} />;
       case AppID.CALCULATOR: return <CalculatorApp />;
       case AppID.GEMINI: return <GeminiAssistant />;
-      case AppID.NOTES: return <NotesApp launchProps={launchProps} />;
+      case AppID.NOTES: return <NotesApp fs={fileSystem} launchProps={launchProps} />;
       case AppID.PHOTOS: return <PhotosApp launchProps={launchProps} />;
       case AppID.SETTINGS: return (
         <SettingsApp 

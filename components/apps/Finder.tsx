@@ -164,7 +164,10 @@ export const FinderApp: React.FC<FinderAppProps> = ({ fs, launchProps, onContext
       if (['png', 'jpg', 'jpeg'].includes(ext || '')) {
          onOpenApp(AppID.PHOTOS, { initialPhoto: file.content });
       } else if (['txt', 'md', 'json'].includes(ext || '')) {
-         onOpenApp(AppID.NOTES, { initialNote: { title: file.name, content: file.content || '' } });
+         onOpenApp(AppID.NOTES, { 
+           initialNote: { title: file.name, content: file.content || '' },
+           filePath: currentFolder 
+         });
       } else if (file.size === 'Device') {
          alert(`Connecting to ${file.name}...`);
       } else {

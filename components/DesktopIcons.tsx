@@ -22,7 +22,10 @@ export const DesktopIcons: React.FC<DesktopIconsProps> = ({ fs, onOpenApp, onCon
       if (['png', 'jpg', 'jpeg'].includes(ext || '')) {
          onOpenApp(AppID.PHOTOS, { initialPhoto: file.content });
       } else if (['txt', 'md', 'json'].includes(ext || '')) {
-         onOpenApp(AppID.NOTES, { initialNote: { title: file.name, content: file.content || '' } });
+         onOpenApp(AppID.NOTES, { 
+           initialNote: { title: file.name, content: file.content || '' },
+           filePath: 'Desktop'
+         });
       } else {
          alert(`Cannot open ${file.name}`);
       }
